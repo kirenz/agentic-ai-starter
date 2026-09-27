@@ -5,7 +5,7 @@ from helpdesk.config import model
 root_agent = Agent(
     name="nimbus_core",
     model=model(),
-    description="Support assistant that personalises answers with session state.",
+    description="Support assistant that personalizes answers with session state.",
     instruction=(
         "You are the support assistant of Nimbus Labs. The Nimbus Home Hub is a smart home hub "
         "that connects lights, plugs and sensors. "

@@ -15,7 +15,7 @@ The key goes into Secret Manager, never into the image or the command line histo
 
 ```bash
 printf "API key: "; read -rs KEY && printf "%s" "$KEY" | \
-  gcloud secrets create google-api-key --data-file=- && unset KEY
+  gcloud secrets create google-api-key --data-file=-; unset KEY
 
 # Allow the Cloud Run runtime account (default compute account) to read it.
 PROJECT_NUMBER=$(gcloud projects describe YOUR_PROJECT_ID --format='value(projectNumber)')

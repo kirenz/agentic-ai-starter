@@ -27,6 +27,6 @@ root_agent = Agent(
 app = App(
     name="m04_context_solution",
     root_agent=root_agent,
-    # Summarise older events every 5 turns, keep 1 turn of overlap.
+    # Summarize older events every 5 turns, keep 1 turn of overlap.
     events_compaction_config=EventsCompactionConfig(compaction_interval=5, overlap_size=1),
 )

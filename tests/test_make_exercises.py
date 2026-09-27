@@ -91,6 +91,7 @@ def test_build_all_rejects_folder_with_only_unclosed_opener(tmp_path: Path):
         build_all(tmp_path)
 
 
+@pytest.mark.maintainer
 def test_committed_exercises_match_generated_ones(tmp_path: Path):
     agents = Path(__file__).parent.parent / "agents"
     copy = tmp_path / "agents"

@@ -44,6 +44,7 @@ Folders with a `_solution` twin are exercises: look for `# TODO`. The `_solution
 ```bash
 uv run pytest                                  # offline tests
 uv run pytest -m live                          # tests that call the Gemini API
+uv run pytest -m maintainer                    # repo check: exercises match their solutions
 uv run python -m helpdesk.check_models         # list Flash models, check the configured one
 uv run python -m scripts.run_programmatically  # module 2: runner, sessions, events, tokens
 uv run python -m ui.gradio_app                 # module 9: chat UI
