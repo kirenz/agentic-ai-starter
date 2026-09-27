@@ -33,7 +33,7 @@
         {
           "invocation_id": "inv-order-unknown",
           "user_content": {"role": "user", "parts": [{"text": "What is the status of order NH-9999?"}]},
-          "final_response": {"role": "model", "parts": [{"text": "I could not find an order with the number NH-9999. Please check the order number."}]},
+          "final_response": {"role": "model", "parts": [{"text": "Order NH-9999 could not be found. Please check the order number and try again."}]},
           "intermediate_data": {"tool_uses": [{"name": "get_order_status", "args": {"order_id": "NH-9999"}}], "intermediate_responses": []}
         }
       ],

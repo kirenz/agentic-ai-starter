@@ -21,7 +21,9 @@ def test_evalset_matches_adk_schema():
 
 def test_config_defines_criteria():
     config = json.loads((EVAL_DIR / "test_config.json").read_text())
-    assert set(config["criteria"]) == {"tool_trajectory_avg_score", "response_match_score"}
+    assert set(config["criteria"]) == {"tool_trajectory_avg_score", "final_response_match_v2"}
+    judge = config["criteria"]["final_response_match_v2"]
+    assert judge["judge_model_options"]["judge_model"] == "gemini-3.8-flash"
 
 
 def test_trajectory_criterion_compares_tool_names_only():
