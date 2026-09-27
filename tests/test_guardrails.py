@@ -15,8 +15,12 @@ def test_detects_injection(text):
     assert looks_like_injection(text)
 
 
-def test_normal_question_passes():
-    assert not looks_like_injection("My hub light is orange, what should I do?")
+@pytest.mark.parametrize("text", [
+    "My hub light is orange, what should I do?",
+    "The app says you are now offline",
+])
+def test_normal_question_passes(text):
+    assert not looks_like_injection(text)
 
 
 async def test_plugin_blocks_injection_before_model_call():
@@ -39,3 +43,8 @@ def test_refund_policy_blocks_large_refunds():
 def test_refund_policy_ignores_other_tools_and_small_refunds():
     assert refund_policy(NS(name="get_order_status"), {"order_id": "NH-1001"}, None) is None
     assert refund_policy(NS(name="issue_refund"), {"order_id": "NH-1003", "amount_eur": 39.0, "reason": "x"}, None) is None
+
+
+def test_refund_policy_blocks_non_numeric_amount():
+    result = refund_policy(NS(name="issue_refund"), {"order_id": "NH-1001", "amount_eur": "all of it", "reason": "x"}, None)
+    assert result["status"] == "blocked"
