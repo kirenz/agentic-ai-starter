@@ -42,11 +42,15 @@ def get_order_status(order_id: str) -> dict:
 
     Returns:
         A dict with the order status and item, or status "not_found".
+        Delivered orders also include days_since_delivery (for the 30-day return rule).
     """
     order = orders.get(order_id)
     if order is None:
         return {"status": "not_found", "order_id": order_id}
-    return {"status": "ok", "order_id": order_id.strip().upper(), "order_status": order["status"], "item": order["item"]}
+    result = {"status": "ok", "order_id": order_id.strip().upper(), "order_status": order["status"], "item": order["item"]}
+    if order["delivered_days_ago"] is not None:
+        result["days_since_delivery"] = order["delivered_days_ago"]
+    return result
 
 
 def create_ticket(subject: str, description: str, priority: str = "normal") -> dict:

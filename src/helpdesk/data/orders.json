@@ -1,6 +1,6 @@
 {
-  "NH-1001": {"customer": "Alex Weber", "item": "Nimbus Home Hub", "total_eur": 129.0, "status": "delivered", "delivered_on": "2026-09-10"},
-  "NH-1002": {"customer": "Sam Keller", "item": "Nimbus Home Hub", "total_eur": 129.0, "status": "shipped", "delivered_on": null},
-  "NH-1003": {"customer": "Robin Maier", "item": "Nimbus Motion Sensor (2-pack)", "total_eur": 39.0, "status": "processing", "delivered_on": null},
-  "NH-1004": {"customer": "Kim Schulz", "item": "Nimbus Home Hub + 4 Smart Plugs", "total_eur": 189.0, "status": "delivered", "delivered_on": "2026-07-02"}
+  "NH-1001": {"customer": "Alex Weber", "item": "Nimbus Home Hub", "total_eur": 129.0, "status": "delivered", "delivered_days_ago": 17},
+  "NH-1002": {"customer": "Sam Keller", "item": "Nimbus Home Hub", "total_eur": 129.0, "status": "shipped", "delivered_days_ago": null},
+  "NH-1003": {"customer": "Robin Maier", "item": "Nimbus Motion Sensor (2-pack)", "total_eur": 39.0, "status": "processing", "delivered_days_ago": null},
+  "NH-1004": {"customer": "Kim Schulz", "item": "Nimbus Home Hub + 4 Smart Plugs", "total_eur": 189.0, "status": "delivered", "delivered_days_ago": 87}
 }

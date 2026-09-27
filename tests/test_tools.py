@@ -13,6 +13,13 @@ def test_order_status_known_order():
     assert result == {"status": "ok", "order_id": "NH-1002", "order_status": "shipped", "item": "Nimbus Home Hub"}
 
 
+def test_order_status_delivered_order_reports_days_since_delivery():
+    result = tools.get_order_status("NH-1004")
+    assert result["order_status"] == "delivered"
+    assert result["days_since_delivery"] == 87
+    assert tools.get_order_status("NH-1001")["days_since_delivery"] == 17
+
+
 def test_order_status_unknown_order():
     assert tools.get_order_status("NH-9999")["status"] == "not_found"
 
