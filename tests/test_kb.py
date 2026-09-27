@@ -16,3 +16,15 @@ def test_search_returns_at_most_k_and_skips_headings():
 
 def test_search_without_overlap_returns_empty():
     assert kb.search("zzzz qqqq") == []
+
+
+def test_search_matches_hyphenated_words():
+    assert kb.search("wifi")[0].source == "wifi.md"
+
+
+def test_search_ignores_stopwords():
+    assert kb.search("what is the weather today") == []
+
+
+def test_search_matches_word_forms():
+    assert kb.search("how many devices can I connect")[0].source == "setup.md"

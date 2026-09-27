@@ -12,8 +12,26 @@ class Passage:
     text: str
 
 
+STOPWORDS = {
+    "the", "a", "an", "is", "are", "i", "my", "me", "how", "do", "does", "what", "to", "of",
+    "and", "or", "can", "it", "in", "on", "for", "with", "this", "that", "you", "your", "be",
+}
+SUFFIXES = ("ing", "ed", "s")  # "connected" -> "connect", "devices" -> "device"
+
+
+def _stem(word: str) -> str:
+    """Strip one common suffix from longer words so word forms match."""
+    if len(word) > 4:
+        for suffix in SUFFIXES:
+            if word.endswith(suffix):
+                return word[: -len(suffix)]
+    return word
+
+
 def _tokens(text: str) -> set[str]:
-    return set(re.findall(r"[a-z0-9]+", text.lower()))
+    """Lowercase words without stopwords; "Wi-Fi" becomes "wifi"."""
+    words = re.findall(r"[a-z0-9]+", text.lower().replace("-", ""))
+    return {_stem(w) for w in words if w not in STOPWORDS}
 
 
 @cache

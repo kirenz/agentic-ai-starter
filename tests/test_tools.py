@@ -39,3 +39,7 @@ def test_search_manual_wraps_passages():
     result = tools.search_manual("firmware update now")
     assert result["status"] == "ok"
     assert result["passages"][0]["source"] == "firmware.md"
+
+
+def test_refund_nan_amount_is_rejected():
+    assert tools.issue_refund("NH-1001", float("nan"), "Invalid")["status"] == "rejected"

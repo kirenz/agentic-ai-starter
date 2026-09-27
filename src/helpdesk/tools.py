@@ -79,6 +79,6 @@ def issue_refund(order_id: str, amount_eur: float, reason: str) -> dict:
     order = orders.get(order_id)
     if order is None:
         return {"status": "rejected", "reason": "unknown order"}
-    if amount_eur <= 0 or amount_eur > order["total_eur"]:
+    if not (0 < amount_eur <= order["total_eur"]):  # also rejects NaN
         return {"status": "rejected", "reason": "amount must be between 0 and the order total"}
     return {"status": "refunded", "order_id": order_id.strip().upper(), "amount_eur": amount_eur, "reason": reason}
