@@ -78,5 +78,5 @@ Delete the service after the exercise to avoid costs:
 ```bash
 gcloud run services delete nimbus-support --region europe-west3
 gcloud secrets delete google-api-key
-rm -rf "$(dirname "$STAGE")"   # the staging copy (same shell session as step 2)
+rm -rf "$(dirname "${STAGE:?}")"   # the staging copy (same shell session as step 2)
 ```
