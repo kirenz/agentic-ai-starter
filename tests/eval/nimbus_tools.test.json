@@ -1,0 +1,43 @@
+{
+  "eval_set_id": "nimbus_tools",
+  "name": "Nimbus tool use",
+  "description": "Checks that the tools agent picks the right tool for typical requests.",
+  "eval_cases": [
+    {
+      "eval_id": "order_shipped",
+      "conversation": [
+        {
+          "invocation_id": "inv-order-shipped",
+          "user_content": {"role": "user", "parts": [{"text": "Where is my order NH-1002?"}]},
+          "final_response": {"role": "model", "parts": [{"text": "Your order NH-1002 (Nimbus Home Hub) has shipped."}]},
+          "intermediate_data": {"tool_uses": [{"name": "get_order_status", "args": {"order_id": "NH-1002"}}], "intermediate_responses": []}
+        }
+      ],
+      "session_input": {"app_name": "m03_tools_solution", "user_id": "eval_user", "state": {}}
+    },
+    {
+      "eval_id": "wifi_reset",
+      "conversation": [
+        {
+          "invocation_id": "inv-wifi-reset",
+          "user_content": {"role": "user", "parts": [{"text": "How do I reset the wifi settings of my hub?"}]},
+          "final_response": {"role": "model", "parts": [{"text": "Hold the reset button on the back for 10 seconds until the light blinks orange, then add the hub again in the app (source: wifi.md)."}]},
+          "intermediate_data": {"tool_uses": [{"name": "search_manual", "args": {"query": "reset wifi settings"}}], "intermediate_responses": []}
+        }
+      ],
+      "session_input": {"app_name": "m03_tools_solution", "user_id": "eval_user", "state": {}}
+    },
+    {
+      "eval_id": "order_unknown",
+      "conversation": [
+        {
+          "invocation_id": "inv-order-unknown",
+          "user_content": {"role": "user", "parts": [{"text": "What is the status of order NH-9999?"}]},
+          "final_response": {"role": "model", "parts": [{"text": "I could not find an order with the number NH-9999. Please check the order number."}]},
+          "intermediate_data": {"tool_uses": [{"name": "get_order_status", "args": {"order_id": "NH-9999"}}], "intermediate_responses": []}
+        }
+      ],
+      "session_input": {"app_name": "m03_tools_solution", "user_id": "eval_user", "state": {}}
+    }
+  ]
+}
