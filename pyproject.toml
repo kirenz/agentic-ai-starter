@@ -28,3 +28,9 @@ markers = ["live: calls the Gemini API (needs GOOGLE_API_KEY)"]
 addopts = "-m 'not live'"
 asyncio_mode = "auto"
 pythonpath = ["."]
+# Known, expected warnings from the pinned libraries; everything else stays visible.
+filterwarnings = [
+  "ignore:\\[EXPERIMENTAL\\]:UserWarning",
+  "ignore:MCPTool class is deprecated:DeprecationWarning",
+  "ignore:`langchain.mcp` is in beta:langchain_core._api.beta_decorator.LangChainBetaWarning",
+]
