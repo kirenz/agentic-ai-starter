@@ -35,18 +35,53 @@ ADK prints a few `[EXPERIMENTAL]` warnings on startup. They are expected and can
 | `ui/` | Chat UI with Gradio |
 | `langgraph_version/` | The same assistant in LangChain/LangGraph: tools, MCP, middleware, memory, graph, multi-agent, streaming |
 
-Folders without `_solution` are exercises: look for `# TODO`. The `_solution` folders contain a working version.
+Folders with a `_solution` twin are exercises: look for `# TODO`. The `_solution` folders contain a working version. `m00_first_agent` has no twin; it is complete as it is.
 
 `uv run python -m scripts.make_exercises` regenerates the exercise folders from the solutions and overwrites any edits you made in them.
 
 ## Useful commands
 
 ```bash
-uv run pytest                    # offline tests
-uv run pytest -m live            # tests that call the Gemini API
-uv run python -m scripts.run_programmatically
-uv run python -m ui.gradio_app
+uv run pytest                                  # offline tests
+uv run pytest -m live                          # tests that call the Gemini API
+uv run python -m helpdesk.check_models         # list Flash models, check the configured one
+uv run python -m scripts.run_programmatically  # module 2: runner, sessions, events, tokens
+uv run python -m ui.gradio_app                 # module 9: chat UI
 ```
+
+### Module-specific commands
+
+**Module 4, memory.** `adk web` does not write sessions to memory, so the recall of `m04_context` shows up in this demo instead:
+
+```bash
+uv run python -m scripts.memory_demo
+```
+
+**Module 6, A2A.** Start the remote billing agent in a second terminal before you open `m06_a2a_client` in `adk web`:
+
+```bash
+uv run uvicorn scripts.a2a_billing_server:a2a_app --port 8001
+```
+
+**Evaluation.** Each run calls the agent and, in addition, a judge model several times per case, so it costs noticeably more than a normal chat:
+
+```bash
+uv run pytest -m live tests/live/test_eval_live.py
+uv run adk eval agents/m03_tools_solution tests/eval/nimbus_tools.test.json \
+  --config_file_path tests/eval/test_config.json --print_detailed_results
+```
+
+**Module 10, LangGraph.** The same assistant built with LangChain and LangGraph:
+
+```bash
+uv run python -m langgraph_version.support_agent   # create_agent, middleware, approval
+uv run python -m langgraph_version.mcp_agent       # tools from the MCP ticket server
+uv run python -m langgraph_version.streaming_demo  # streaming
+uv run python -m langgraph_version.support_graph   # hand-built StateGraph
+uv run python -m langgraph_version.multi_agent     # supervisor with subagents
+```
+
+**Deployment.** See [docs/deploy-cloud-run.md](docs/deploy-cloud-run.md) to run an agent on Cloud Run.
 
 ## Sharing an API key
 
