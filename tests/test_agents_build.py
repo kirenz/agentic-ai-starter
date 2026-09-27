@@ -9,6 +9,7 @@ AGENT_PACKAGES = [
     "agents.m03_tools_solution",
     "agents.m03_mcp_solution",
     "agents.m04_context_solution",
+    "agents.m05_workflow_solution",
 ]
 
 
