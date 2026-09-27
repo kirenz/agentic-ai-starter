@@ -1,0 +1,30 @@
+[project]
+name = "agentic-ai-starter"
+version = "0.1.0"
+description = "Nimbus Support Assistant: hands-on code for an agentic AI course"
+requires-python = ">=3.12"
+dependencies = [
+  "google-adk[a2a,mcp,eval]==2.10.0",
+  "langchain[mcp]==1.4.2",
+  "langgraph==1.2.12",
+  "langchain-google-genai==4.4.0",
+  "mcp==2.2.0",
+  "gradio==6.28.0",
+  "python-dotenv>=1.0",
+]
+
+[dependency-groups]
+dev = ["pytest>=8", "pytest-asyncio>=0.24"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/helpdesk"]
+
+[tool.pytest.ini_options]
+markers = ["live: calls the Gemini API (needs GOOGLE_API_KEY)"]
+addopts = "-m 'not live'"
+asyncio_mode = "auto"
+pythonpath = ["."]
