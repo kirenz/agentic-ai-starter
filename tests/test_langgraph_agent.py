@@ -84,3 +84,42 @@ def test_stream_v2_yields_typed_update_chunks():
                                stream_mode=["updates"], version="v2"))
     assert chunks and all(set(c) >= {"type", "ns", "data"} for c in chunks)
     assert {c["type"] for c in chunks} == {"updates"}
+
+
+def test_second_refund_in_the_same_thread_is_blocked():
+    tools.reset_state()
+    llm = ToolCallingFake(messages=iter([
+        _call("issue_refund", {"order_id": "NH-1003", "amount_eur": 39.0, "reason": "broken"}),
+        AIMessage(content="Your refund of 39 EUR is on its way."),
+        _call("issue_refund", {"order_id": "NH-1001", "amount_eur": 20.0, "reason": "again"}, call_id="call_2"),
+        AIMessage(content="I cannot issue another refund."),
+    ]))
+    agent = build_agent(llm)
+    cfg = {"configurable": {"thread_id": "t4"}}
+    approve = Command(resume={"decisions": [{"type": "approve"}]})
+    agent.invoke({"messages": [{"role": "user", "content": "Refund NH-1003"}]}, cfg, context=CTX, version="v2")
+    agent.invoke(approve, cfg, context=CTX, version="v2")
+
+    agent.invoke({"messages": [{"role": "user", "content": "Refund NH-1001 too"}]}, cfg, context=CTX, version="v2")
+    # The approval step still runs first; the limit then stops the tool itself.
+    done = agent.invoke(approve, cfg, context=CTX, version="v2")
+    texts = _tool_texts(done.value["messages"])
+    assert "limit exceeded" in texts[-1]
+    assert sum("refunded" in t for t in texts) == 1
+
+
+def test_edited_refund_runs_with_the_supervisor_arguments():
+    tools.reset_state()
+    llm = ToolCallingFake(messages=iter([
+        _call("issue_refund", {"order_id": "NH-1001", "amount_eur": 129.0, "reason": "broken"}),
+        AIMessage(content="A partial refund of 50 EUR is on its way."),
+    ]))
+    agent = build_agent(llm)
+    cfg = {"configurable": {"thread_id": "t5"}}
+    agent.invoke({"messages": [{"role": "user", "content": "Refund NH-1001"}]}, cfg, context=CTX, version="v2")
+    edited = {"name": "issue_refund", "args": {"order_id": "NH-1001", "amount_eur": 50.0, "reason": "partial"}}
+    done = agent.invoke(Command(resume={"decisions": [{"type": "edit", "edited_action": edited}]}),
+                        cfg, context=CTX, version="v2")
+    texts = _tool_texts(done.value["messages"])
+    assert any('"amount_eur": 50.0' in t and "refunded" in t for t in texts)
+    assert not any('"amount_eur": 129.0' in t for t in texts)
