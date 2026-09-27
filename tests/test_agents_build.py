@@ -8,6 +8,7 @@ AGENT_PACKAGES = [
     "agents.m02_core_solution",
     "agents.m03_tools_solution",
     "agents.m03_mcp_solution",
+    "agents.m04_context_solution",
 ]
 
 
@@ -26,3 +27,11 @@ def test_tools_agent_has_expected_tools():
 
     names = {getattr(t, "__name__", getattr(t, "name", None)) for t in root_agent.tools}
     assert {"search_manual", "get_order_status", "create_ticket", "web_search"} <= names
+
+
+def test_context_app_has_compaction_and_memory_tool():
+    from agents.m04_context_solution.agent import app
+
+    assert app.events_compaction_config.compaction_interval == 5
+    names = {getattr(t, "name", getattr(t, "__name__", None)) for t in app.root_agent.tools}
+    assert "load_memory" in names
