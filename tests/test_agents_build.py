@@ -10,6 +10,8 @@ AGENT_PACKAGES = [
     "agents.m03_mcp_solution",
     "agents.m04_context_solution",
     "agents.m05_workflow_solution",
+    "agents.m06_multiagent_solution",
+    "agents.m06_a2a_client_solution",
 ]
 
 
@@ -36,3 +38,16 @@ def test_context_app_has_compaction_and_memory_tool():
     assert app.events_compaction_config.compaction_interval == 5
     names = {getattr(t, "name", getattr(t, "__name__", None)) for t in app.root_agent.tools}
     assert "load_memory" in names
+
+
+def test_triage_delegates_to_two_specialists():
+    from agents.m06_multiagent_solution.agent import root_agent
+
+    assert [a.name for a in root_agent.sub_agents] == ["technical_support", "billing_support"]
+    assert all(a.parent_agent is root_agent for a in root_agent.sub_agents)
+
+
+def test_a2a_server_builds_app():
+    from scripts.a2a_billing_server import a2a_app
+
+    assert a2a_app is not None
