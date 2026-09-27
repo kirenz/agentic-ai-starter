@@ -8,7 +8,9 @@ from google.genai import types
 
 load_dotenv()
 
-MODEL_ID = os.getenv("HELPDESK_MODEL", "gemini-3.8-flash")
+# tests/eval/test_config.json mirrors DEFAULT_MODEL_ID as judge model for the adk eval CLI.
+DEFAULT_MODEL_ID = "gemini-3.8-flash"
+MODEL_ID = os.getenv("HELPDESK_MODEL", DEFAULT_MODEL_ID)
 
 RETRY = types.HttpRetryOptions(
     attempts=5,

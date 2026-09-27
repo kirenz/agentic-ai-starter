@@ -23,7 +23,17 @@ def test_config_defines_criteria():
     config = json.loads((EVAL_DIR / "test_config.json").read_text())
     assert set(config["criteria"]) == {"tool_trajectory_avg_score", "final_response_match_v2"}
     judge = config["criteria"]["final_response_match_v2"]
-    assert judge["judge_model_options"]["judge_model"] == "gemini-3.8-flash"
+    assert judge["threshold"] == 0.8
+    assert judge["judge_model_options"]["num_samples"] == 3
+
+
+def test_judge_model_mirrors_default_model_id():
+    # The adk eval CLI reads the JSON as is; the live pytest sets MODEL_ID at runtime.
+    from helpdesk import config as helpdesk_config
+
+    config = json.loads((EVAL_DIR / "test_config.json").read_text())
+    judge_model = config["criteria"]["final_response_match_v2"]["judge_model_options"]["judge_model"]
+    assert judge_model == helpdesk_config.DEFAULT_MODEL_ID
 
 
 def test_trajectory_criterion_compares_tool_names_only():
