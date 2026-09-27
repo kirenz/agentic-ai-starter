@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 import pytest
@@ -88,3 +89,18 @@ def test_build_all_rejects_folder_with_only_unclosed_opener(tmp_path: Path):
     (sol / "agent.py").write_text("# >>> EXERCISE: hint\nx = 1\n")
     with pytest.raises(ValueError, match="agent.py"):
         build_all(tmp_path)
+
+
+def test_committed_exercises_match_generated_ones(tmp_path: Path):
+    agents = Path(__file__).parent.parent / "agents"
+    copy = tmp_path / "agents"
+    shutil.copytree(agents, copy, ignore=shutil.ignore_patterns("__pycache__", ".adk"))
+    created = build_all(copy)
+    assert created, "no exercise folders generated"
+    for target in created:
+        committed_files = {p.relative_to(agents) for p in (agents / target.name).rglob("*.py")}
+        assert committed_files == {p.relative_to(copy) for p in target.rglob("*.py")}
+        for generated in target.rglob("*.py"):
+            committed = agents / generated.relative_to(copy)
+            assert committed.read_text() == generated.read_text(), (
+                f"{committed} is out of date: run uv run python -m scripts.make_exercises")
