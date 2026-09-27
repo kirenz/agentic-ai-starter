@@ -1,4 +1,4 @@
-"""Summarise token usage from ADK events and estimate cost."""
+"""Read ADK events: final answer text, token usage and estimated cost."""
 
 
 def summarize(events) -> dict[str, int]:
@@ -17,3 +17,11 @@ def estimate_cost_eur(summary: dict, eur_per_million_input: float, eur_per_milli
         + summary["output_tokens"] / 1_000_000 * eur_per_million_output
     )
     return round(cost, 4)
+
+
+def final_text(events) -> str:
+    """Return the text of the last final response, or "" if there is none."""
+    for event in reversed(events):
+        if event.is_final_response() and event.content and event.content.parts:
+            return "".join(p.text or "" for p in event.content.parts)
+    return ""

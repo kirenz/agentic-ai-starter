@@ -8,6 +8,7 @@ import asyncio
 from google.adk.runners import InMemoryRunner
 
 from agents.m04_context_solution.agent import app
+from helpdesk.usage import final_text
 
 
 async def main() -> None:
@@ -17,7 +18,7 @@ async def main() -> None:
     await runner.memory_service.add_session_to_memory(monday)
 
     events = await runner.run_debug("Which order did I tell you about last time?", user_id="alex", session_id="friday", quiet=True)
-    print(events[-1].content.parts[0].text)
+    print(final_text(events))
 
 
 if __name__ == "__main__":

@@ -8,9 +8,14 @@ import asyncio
 from google.adk.runners import InMemoryRunner
 
 from agents.m02_core_solution.agent import root_agent
-from helpdesk.usage import summarize
+from helpdesk.usage import estimate_cost_eur, final_text, summarize
 
 APP = "nimbus_core"
+
+# Example prices in EUR per million tokens. Check the current Gemini pricing page
+# for the model in src/helpdesk/config.py before you rely on the estimate.
+EUR_PER_MILLION_INPUT_TOKENS = 0.30
+EUR_PER_MILLION_OUTPUT_TOKENS = 2.50
 
 
 async def main() -> None:
@@ -18,7 +23,7 @@ async def main() -> None:
 
     # 1) Quick test without session boilerplate
     events = await runner.run_debug("What can the Nimbus Home Hub do?", quiet=True)
-    print("Answer:", events[-1].content.parts[0].text)
+    print("Answer:", final_text(events))
 
     # 2) Explicit session with initial state
     session = await runner.session_service.create_session(
@@ -30,7 +35,10 @@ async def main() -> None:
 
     session = await runner.session_service.get_session(app_name=APP, user_id="u1", session_id="s1")
     print("State after run:", session.state)
-    print("Usage:", summarize(events))
+    usage = summarize(events)
+    print("Usage:", usage)
+    cost = estimate_cost_eur(usage, EUR_PER_MILLION_INPUT_TOKENS, EUR_PER_MILLION_OUTPUT_TOKENS)
+    print(f"Estimated cost: {cost} EUR")
 
 
 if __name__ == "__main__":
