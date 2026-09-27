@@ -12,6 +12,7 @@ AGENT_PACKAGES = [
     "agents.m05_workflow_solution",
     "agents.m06_multiagent_solution",
     "agents.m06_a2a_client_solution",
+    "agents.m07_guardrails_solution",
 ]
 
 
