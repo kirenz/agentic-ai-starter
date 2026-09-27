@@ -9,7 +9,7 @@ from helpdesk.config import model
 
 
 class Triage(BaseModel):
-    category: Literal["TECHNICAL", "BILLING", "OTHER"]
+    category: Literal["TECHNICAL", "ORDER_STATUS", "REFUND", "OTHER"]
     request: str  # the customer's problem in one sentence
     order_id: str | None = None
 
@@ -20,7 +20,8 @@ classifier = Agent(
     output_schema=Triage,
     instruction=(
         "Classify the customer message. category is TECHNICAL for device problems, "
-        "BILLING for refunds, charges or orders, OTHER for everything else. "
+        "ORDER_STATUS for questions about where an order is or what its status is, "
+        "REFUND for refund or money-back requests, OTHER for everything else. "
         "In request, restate the customer's problem in one sentence. "
         "Set order_id if the message contains an order number like NH-1001."
     ),
@@ -36,7 +37,8 @@ technical_agent = Agent(
 
 def route(node_input):
     triage = Triage.model_validate(node_input)
-    if triage.category == "BILLING" and orders.get(triage.order_id or "") is None:
+    # Order questions and refunds both need a valid order number.
+    if triage.category in ("ORDER_STATUS", "REFUND") and orders.get(triage.order_id or "") is None:
         return Event(route="NO_ORDER", output=triage)
     # >>> EXERCISE: send the triage result along the route named by its category
     return Event(route=triage.category, output=triage)
@@ -46,6 +48,14 @@ def route(node_input):
 def technical_request(node_input):
     # Hand the technical agent the customer's problem, not the triage object.
     return Event(output=Triage.model_validate(node_input).request)
+
+
+def order_status(node_input):
+    info = tools.get_order_status(Triage.model_validate(node_input).order_id)
+    text = f"Order {info['order_id']} ({info['item']}) is {info['order_status']}."
+    if "days_since_delivery" in info:
+        text += f" It was delivered {info['days_since_delivery']} days ago."
+    return Event(output=text)
 
 
 def ask_for_order(node_input):
@@ -85,7 +95,8 @@ def build_workflow(classifier_node) -> Workflow:
             ("START", classifier_node, route),
             (route, {
                 "TECHNICAL": technical_request,
-                "BILLING": ask_approval,
+                "ORDER_STATUS": order_status,
+                "REFUND": ask_approval,
                 "NO_ORDER": ask_for_order,
                 "OTHER": other,
             }),
