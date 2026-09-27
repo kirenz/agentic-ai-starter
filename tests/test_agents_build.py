@@ -60,3 +60,11 @@ def test_gradio_app_builds():
     from ui.gradio_app import demo
 
     assert isinstance(demo, gr.ChatInterface)
+
+
+def test_core_agent_knows_the_product():
+    from agents.m02_core.agent import root_agent as exercise
+    from agents.m02_core_solution.agent import root_agent as solution
+
+    for agent in (exercise, solution):
+        assert "smart home hub that connects lights, plugs and sensors" in agent.instruction
