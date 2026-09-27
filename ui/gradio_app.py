@@ -15,6 +15,7 @@ runner = InMemoryRunner(agent=root_agent, app_name=APP_NAME)
 
 async def respond(message: str, history: list, request: gr.Request) -> str:
     # One ADK session per browser session.
+    # Callers without a browser session (e.g. the API) all share the "local" session.
     session_id = request.session_hash or "local"
     service = runner.session_service
     if await service.get_session(app_name=APP_NAME, user_id=session_id, session_id=session_id) is None:

@@ -14,7 +14,7 @@ gcloud services enable run.googleapis.com cloudbuild.googleapis.com \
 The key goes into Secret Manager, never into the image or the command line history:
 
 ```bash
-read -rs -p "API key: " KEY && printf "%s" "$KEY" | \
+printf "API key: "; read -rs KEY && printf "%s" "$KEY" | \
   gcloud secrets create google-api-key --data-file=- && unset KEY
 
 # Allow the Cloud Run runtime account (default compute account) to read it.
@@ -28,13 +28,13 @@ gcloud secrets add-iam-policy-binding google-api-key \
 
 `adk deploy cloud_run` uploads only the agent folder. The agent imports the
 `helpdesk` package from `src/`, so bundle it next to the agent and put that
-folder on the import path:
+folder on the import path. Run from the repository root:
 
 ```bash
 STAGE="$(mktemp -d)/nimbus_support"
 mkdir -p "$STAGE"
 cp agents/m06_multiagent_solution/agent.py "$STAGE/"
-cp -R src/helpdesk "$STAGE/helpdesk"
+rsync -a --exclude __pycache__ src/helpdesk "$STAGE/"
 cat > "$STAGE/__init__.py" <<'EOF'
 import os
 import sys
@@ -68,7 +68,8 @@ uv run adk deploy cloud_run \
   `--project`, `--region`, `--port` and `--update-env-vars` itself; do not repeat them there.
 - `gcloud` asks whether to allow unauthenticated access. Answering yes makes the
   service public, and every visitor spends your key. Add `--no-allow-unauthenticated`
-  after `--` to keep it private.
+  after `--` to keep it private, then open the UI through an authenticated local proxy:
+  `gcloud run services proxy nimbus-support --region europe-west3` (serves on http://localhost:8080).
 
 ## 4. Clean up
 
@@ -77,4 +78,5 @@ Delete the service after the exercise to avoid costs:
 ```bash
 gcloud run services delete nimbus-support --region europe-west3
 gcloud secrets delete google-api-key
+rm -rf "$(dirname "$STAGE")"   # the staging copy (same shell session as step 2)
 ```
