@@ -28,16 +28,50 @@ def test_review_loops_until_answer_cites_a_source():
     ]))
     out = build_graph(llm).invoke(_start("How do I reset the wifi?"), {"configurable": {"thread_id": "g2"}}, version="v2")
     assert out.value["attempts"] == 2
+    # The second draft gets a note that explains what was wrong with the first one.
+    assert any("did not cite a source file" in m.text for m in out.value["messages"])
+    assert "wifi.md" in out.value["messages"][-1].text
+
+
+def test_attempts_default_to_zero_when_missing():
+    llm = ToolCallingFake(messages=iter([AIMessage(content="Hold the reset button for 10 seconds (wifi.md).")]))
+    out = build_graph(llm).invoke({"messages": [("user", "How do I reset the wifi?")]},
+                                  {"configurable": {"thread_id": "g5"}}, version="v2")
+    assert out.value["attempts"] == 1
 
 
 def test_refund_request_interrupts_and_resumes():
     graph = build_graph(ToolCallingFake(messages=iter([])))
     cfg = {"configurable": {"thread_id": "g3"}}
     first = graph.invoke(_start("I want a refund for order NH-1001"), cfg, version="v2")
-    assert first.value["route"] == "billing"
+    assert first.value["route"] == "refund"
     assert first.interrupts[0].value["question"].startswith("Approve")
-    done = graph.invoke(Command(resume="yes"), cfg, version="v2")
-    assert "approved" in done.value["messages"][-1].content
+    done = graph.invoke(Command(resume=" Yes "), cfg, version="v2")
+    assert done.value["messages"][-1].content.startswith("Refund approved")
+
+
+def test_refund_request_rejected_on_no():
+    graph = build_graph(ToolCallingFake(messages=iter([])))
+    cfg = {"configurable": {"thread_id": "g6"}}
+    graph.invoke(_start("Please refund order NH-1001"), cfg, version="v2")
+    done = graph.invoke(Command(resume="no"), cfg, version="v2")
+    assert done.value["messages"][-1].content.startswith("Refund not approved")
+
+
+def test_order_status_question_answers_without_interrupt():
+    graph = build_graph(ToolCallingFake(messages=iter([])))
+    out = graph.invoke(_start("Where is my order NH-1002?"), {"configurable": {"thread_id": "g7"}}, version="v2")
+    assert out.value["route"] == "order_status"
+    assert not out.interrupts
+    assert "NH-1002" in out.value["messages"][-1].content
+    assert "shipped" in out.value["messages"][-1].content
+
+
+def test_in_order_to_is_a_technical_question():
+    llm = ToolCallingFake(messages=iter([AIMessage(content="Hold the reset button for 10 seconds (wifi.md).")]))
+    out = build_graph(llm).invoke(_start("What do I do in order to reset the wifi?"),
+                                  {"configurable": {"thread_id": "g8"}}, version="v2")
+    assert out.value["route"] == "technical"
 
 
 def test_supervisor_delegates_to_technical_subagent():
