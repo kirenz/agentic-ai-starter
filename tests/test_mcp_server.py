@@ -8,5 +8,7 @@ async def test_mcp_server_exposes_create_ticket():
     tools = await ticket_server.get_tools()
     try:
         assert [t.name for t in tools] == ["create_ticket"]
+        # The model sees the same description as for the plain function tool.
+        assert '"low", "normal" or "high"' in tools[0].description
     finally:
         await ticket_server.close()

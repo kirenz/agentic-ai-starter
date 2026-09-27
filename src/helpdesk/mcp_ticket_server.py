@@ -3,6 +3,8 @@
 Run standalone: uv run python -m helpdesk.mcp_ticket_server
 """
 
+import inspect
+
 from mcp.server.mcpserver import MCPServer
 
 from helpdesk import tools
@@ -10,9 +12,9 @@ from helpdesk import tools
 server = MCPServer("nimbus-tickets")
 
 
-@server.tool()
+# Reuse the full docstring (incl. the allowed priority values) as the tool description.
+@server.tool(description=inspect.getdoc(tools.create_ticket))
 def create_ticket(subject: str, description: str, priority: str = "normal") -> dict:
-    """Create a Nimbus support ticket and return its id."""
     return tools.create_ticket(subject, description, priority)
 
 
