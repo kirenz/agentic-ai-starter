@@ -30,9 +30,16 @@ async def main() -> None:
         agent = create_agent(
             model=chat_model(),
             tools=[tools.search_manual, *mcp_tools],
-            system_prompt="You are the Nimbus support assistant. Create a ticket when the manual does not help.",
+            system_prompt=(
+                "You are the Nimbus support assistant. Create a ticket when the manual does not help. "
+                "If the customer explicitly asks for a ticket, create it with create_ticket."
+            ),
         )
-        result = await agent.ainvoke({"messages": [{"role": "user", "content": "My automations stopped running. Please open a ticket."}]})
+        question = (
+            "My automations stopped running. I already checked that all devices are online "
+            "and the automation is switched on. Please open a ticket."
+        )
+        result = await agent.ainvoke({"messages": [{"role": "user", "content": question}]})
         print(result["messages"][-1].text)
 
 
