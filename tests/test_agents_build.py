@@ -52,3 +52,11 @@ def test_a2a_server_builds_app():
     from scripts.a2a_billing_server import a2a_app
 
     assert a2a_app is not None
+
+
+def test_gradio_app_builds():
+    import gradio as gr
+
+    from ui.gradio_app import demo
+
+    assert isinstance(demo, gr.ChatInterface)
