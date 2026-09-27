@@ -1,3 +1,5 @@
+from typing import Literal
+
 from google.adk import Agent, Event, Workflow
 from google.adk.events import RequestInput
 from pydantic import BaseModel
@@ -7,7 +9,8 @@ from helpdesk.config import model
 
 
 class Triage(BaseModel):
-    category: str  # TECHNICAL, BILLING or OTHER
+    category: Literal["TECHNICAL", "BILLING", "OTHER"]
+    request: str  # the customer's problem in one sentence
     order_id: str | None = None
 
 
@@ -18,6 +21,7 @@ classifier = Agent(
     instruction=(
         "Classify the customer message. category is TECHNICAL for device problems, "
         "BILLING for refunds, charges or orders, OTHER for everything else. "
+        "In request, restate the customer's problem in one sentence. "
         "Set order_id if the message contains an order number like NH-1001."
     ),
 )
@@ -32,17 +36,25 @@ technical_agent = Agent(
 
 def route(node_input):
     triage = Triage.model_validate(node_input)
+    if triage.category == "BILLING" and orders.get(triage.order_id or "") is None:
+        return Event(route="NO_ORDER", output=triage)
     # >>> EXERCISE: send the triage result along the route named by its category
     return Event(route=triage.category, output=triage)
     # <<< EXERCISE
 
 
+def technical_request(node_input):
+    # Hand the technical agent the customer's problem, not the triage object.
+    return Event(output=Triage.model_validate(node_input).request)
+
+
+def ask_for_order(node_input):
+    return Event(output="Please provide your order number (e.g. NH-1001).")
+
+
 def ask_approval(node_input, ctx):
     triage = Triage.model_validate(node_input)
-    order = orders.get(triage.order_id or "")
-    if order is None:
-        yield Event(output="No valid order number found. Please provide your order number (e.g. NH-1001).")
-        return
+    order = orders.get(triage.order_id)
     # Keep the pending refund in session state; it survives the pause.
     ctx.state["pending_refund"] = {"order_id": triage.order_id, "amount_eur": order["total_eur"]}
     # >>> EXERCISE: pause the workflow and ask a supervisor to approve the refund
@@ -55,6 +67,7 @@ def ask_approval(node_input, ctx):
 
 def apply_decision(node_input, ctx):
     pending = ctx.state.get("pending_refund")
+    ctx.state["pending_refund"] = None  # decided once, never replayed
     if pending is None or str(node_input).strip().lower() != "yes":
         return Event(output="Refund not approved. A supervisor will contact the customer.")
     result = tools.issue_refund(pending["order_id"], pending["amount_eur"], "approved by supervisor")
@@ -70,7 +83,13 @@ def build_workflow(classifier_node) -> Workflow:
         name="nimbus_workflow",
         edges=[
             ("START", classifier_node, route),
-            (route, {"TECHNICAL": technical_agent, "BILLING": ask_approval, "OTHER": other}),
+            (route, {
+                "TECHNICAL": technical_request,
+                "BILLING": ask_approval,
+                "NO_ORDER": ask_for_order,
+                "OTHER": other,
+            }),
+            (technical_request, technical_agent),
             (ask_approval, apply_decision),
         ],
     )
